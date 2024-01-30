@@ -1,4 +1,60 @@
-body {
+* {
     margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    display: flex;
+    justify-content: center;
     font-family: sans-serif;
+    text-align: center;
+}
+
+.content h1 {
+    padding-top: 20px;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 30px;
+    margin-bottom: 50px;
+}
+
+th, td{
+    border: 1px #333 solid;
+    padding: 10px;
+}
+
+@media screen and (max-width: 165px) {
+    html {
+        display: flex;
+        justify-content: center;
+    }
+    body {
+        font-size: 0.5rem;
+        padding: 5px;
+        margin: 0;
+        justify-content: center;
+    }
+    .content h1 {
+        padding-top: 2px;
+    }
+    table {
+        border-collapse: collapse;
+        width: 50%;
+        margin-top: 2px;
+        margin-bottom: 2px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    th, td{
+        border: 1px #333 solid;
+        padding: 2px;
+    }
+    form input {
+        width: 50%;
+    }
+    
 }
