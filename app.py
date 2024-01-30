@@ -1,4 +1,4 @@
-from flask import Flask, render_template, url_for
+from flask import Flask, render_template, url_for, request
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 
@@ -27,11 +27,23 @@ class Todo(db.Model):
     
     def __str__(self):
         """string representation of class"""
-        return f"<Task {self.id}>"
+        return f"<Task {self.id}>"    
     
 # create an index route so that when we browse to the URL we dont get error 404
-@app.route('/', methods=['POST', 'GET'])
+@app.route("/", methods=["POST", "GET"])
 def index():
+    if request.method ==  "POST":
+        # retrieve the content of the form
+        # the 'content' passed to form is the name of the form in index.html
+        task_content = request.form['content']
+        # create a new task which is an instance of the Todo class
+        new_task = Todo(content=task_content)
+        
+        try:
+            db.session.add(new_task)
+    else:
+        return render_template("index.html")
+    
     return render_template("index.html")
 
 if __name__ == "__main__":
