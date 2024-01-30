@@ -1,4 +1,4 @@
-from flask import Flask, render_template, url_for, request
+from flask import Flask, render_template, url_for, request, redirect
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 
@@ -37,12 +37,21 @@ def index():
         # the 'content' passed to form is the name of the form in index.html
         task_content = request.form['content']
         # create a new task which is an instance of the Todo class
-        new_task = Todo(content=task_content)
+        new_task = Todo(content=task_content) # type: ignore
         
         try:
+            # add task to database
             db.session.add(new_task)
+            # commit it to the database
+            db.session.commit()
+            # return a redirect back to index
+            return redirect('/')
+        except:
+            return 'There was an issue adding your task'
     else:
-        return render_template("index.html")
+        # Query the database to retrieve all the database ordered by their date-created
+        tasks =Todo.query.order_by(Todo.date_created).all()
+        return render_template("index.html", tasks=tasks)
     
     return render_template("index.html")
 
