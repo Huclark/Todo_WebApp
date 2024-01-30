@@ -30,7 +30,7 @@ class Todo(db.Model):
         return f"<Task {self.id}>"
     
 # create an index route so that when we browse to the URL we dont get error 404
-@app.route('/')
+@app.route('/', methods=['POST', 'GET'])
 def index():
     return render_template("index.html")
 
