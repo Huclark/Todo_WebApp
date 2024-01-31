@@ -57,6 +57,10 @@ class User(db.Model, UserMixin):
     # backref establishes a reverse relationship from Todo to User
     todos = db.relationship('Todo', backref='user', lazy=True)
     
+    def __str__(self):
+        """string representation of class"""
+        return f"<User {self.id}>"
+    
 
     
     
