@@ -71,8 +71,25 @@ def delete(id):
     except:
         return "There was an issue deleting your task"
     
-
-        #
+# create a route for updating an existing task
+@app.route("/update/<int:id>", methods=["GET", "POST"])
+def update(id):
+    # retrieve the task to update by id and if it does not exist give an error 404
+    update_task= Todo.query.get_or_404(id)
+    
+    if request.method == "POST":
+        # update the content of the task
+        update_task.content = request.form['content']
+        
+        try:
+            # commit the update
+            db.session.commit()
+            # redirect to task page
+            return redirect('/')
+        except:
+            return "There was an issue updating your task"
+    else:
+        return render_template("update.html", task=update_task)
 
 if __name__ == "__main__":
     # debug=True so when there is an error we can get a message to debug
