@@ -61,8 +61,14 @@ class User(db.Model, UserMixin):
         """string representation of class"""
         return f"<User {self.id}>"
     
+    def set_password(self, password):
+        """This is used to set a hashed password
 
-    
+        Args:
+            password (str): user password
+        """
+        self.password_hash = generate_password_hash(password)
+
     
 # create an index route so that when we browse to the URL we dont get error 404
 @app.route("/", methods=["POST", "GET"])
