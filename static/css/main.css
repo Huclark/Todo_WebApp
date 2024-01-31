@@ -11,8 +11,13 @@ body {
     text-align: center;
 }
 
-.content h1 {
+.content h1,
+.content h4 {
     padding-top: 20px;
+}
+
+.content h4{
+    margin-bottom: 20px;
 }
 
 table {
@@ -38,8 +43,12 @@ th, td{
         margin: 0;
         justify-content: center;
     }
-    .content h1 {
+    .content h1,
+    .content h4 {
         padding-top: 2px;
+    }
+    .content h4 {
+        margin-bottom: 2px;
     }
     table {
         border-collapse: collapse;
