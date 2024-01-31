@@ -93,4 +93,4 @@ def update(id):
 
 if __name__ == "__main__":
     # debug=True so when there is an error we can get a message to debug
-    app.run(debug=True)
+    app.run(debug=False, host="0.0.0.0")
