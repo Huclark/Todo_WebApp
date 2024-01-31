@@ -68,7 +68,20 @@ class User(db.Model, UserMixin):
             password (str): user password
         """
         self.password_hash = generate_password_hash(password)
+        
+    def check_password(self, password):
+        """Authenticates user password
 
+        Args:
+            password (str): plained-text password
+
+        Returns:
+            bool: true if password is authentic, otherwise false
+        """
+        # check_password_hash is from werkzeug library which safely verifies if 
+        # a plained-text password is the same as a stored hashed password
+        return check_password_hash(self.password_hash, password)
+    
     
 # create an index route so that when we browse to the URL we dont get error 404
 @app.route("/", methods=["POST", "GET"])
