@@ -1,8 +1,0 @@
-{
-    "editor.defaultFormatter": "ms-python.python",
-    "[django-html]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
-    },
-    "python.analysis.autoImportCompletions": true,
-    "python.analysis.typeCheckingMode": "basic"
-}
