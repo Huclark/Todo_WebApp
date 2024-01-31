@@ -55,6 +55,25 @@ def index():
     
     return render_template("index.html")
 
+# create another route for deleting a task
+@app.route("/delete/<int:id>")
+def delete(id):
+    # retrieve the task by id and if it does not exist give an error 404
+    delete_task = Todo.query.get_or_404(id)
+    
+    try:
+        # delete task
+        db.session.delete(delete_task)
+        # commit the update
+        db.session.commit()
+        # redirect to task page
+        return redirect('/')
+    except:
+        return "There was an issue deleting your task"
+    
+
+        #
+
 if __name__ == "__main__":
     # debug=True so when there is an error we can get a message to debug
     app.run(debug=True)
