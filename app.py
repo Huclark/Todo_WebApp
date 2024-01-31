@@ -41,7 +41,10 @@ class Todo(db.Model):
     def __str__(self):
         """string representation of class"""
         return f"<Task {self.id}>"
-    
+
+# create the User model
+# UserMixin is a class which handles client authentication and sessions
+# It saves you from writing these methods and properties from scratch
 class User(db.Model, UserMixin):
     """For users
     """
@@ -81,7 +84,19 @@ class User(db.Model, UserMixin):
         # check_password_hash is from werkzeug library which safely verifies if 
         # a plained-text password is the same as a stored hashed password
         return check_password_hash(self.password_hash, password)
-    
+
+# create the login form 
+# FlaskForm class is provided by FLASK-WTF   
+class LoginForm(FlaskForm):
+    # Create a form field for the username
+    # validators=[DataRequired()] specifies that the field is required
+    username = StringField('Username', validators=[DataRequired()])
+    # Create a form field for the password
+    # validators=[DataRequired()] specifies that the field is required
+    password = PasswordField('Password', validators=[DataRequired()])
+    # create a submit button
+    # Login is the label on the submit button
+    submit = SubmitField('Login')
     
 # create an index route so that when we browse to the URL we dont get error 404
 @app.route("/", methods=["POST", "GET"])
