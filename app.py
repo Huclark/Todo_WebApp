@@ -42,6 +42,23 @@ class Todo(db.Model):
         """string representation of class"""
         return f"<Task {self.id}>"
     
+class User(db.Model, UserMixin):
+    """For users
+    """
+    # set the unique identifier of each user
+    id = db.Column(db.Integer, primary_key=True)
+    # Username for each user
+    username = db.Column(db.String(120), unique=True, nullable=False)
+    # hashed password of each user
+    password_hash = db.Column(db.String(256), nullable=False)
+    # this is a relationship attribut representing a one-to-many relationship with the 
+    # Todo model. it links the user table to the todo table
+    # each user can have multiple todo items
+    # backref establishes a reverse relationship from Todo to User
+    todos = db.relationship('Todo', backref='user', lazy=True)
+    
+
+    
     
 # create an index route so that when we browse to the URL we dont get error 404
 @app.route("/", methods=["POST", "GET"])
