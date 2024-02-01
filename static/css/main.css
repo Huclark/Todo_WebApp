@@ -11,6 +11,10 @@ body {
     text-align: center;
 }
 
+.update_heading {
+    margin-bottom: 20px;
+}
+
 .content h1,
 .content h4 {
     padding-top: 20px;
@@ -30,6 +34,48 @@ table {
 th, td{
     border: 1px #333 solid;
     padding: 10px;
+}
+
+.logout {
+    padding-top: 20px;
+}
+
+ul {
+    list-style: none;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.success {
+    color: green;
+}
+
+.error {
+    color: red;
+}
+
+.dha {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.content form {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: left;
+}
+
+.submit {
+    text-align: center;
+}
+
+.submit,
+#username,
+#password,
+#confirm_password {
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 
 @media screen and (max-width: 165px) {
