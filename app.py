@@ -1,9 +1,9 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, abort, get_flashed_messages
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin, LoginManager, login_user, logout_user, login_required, current_user
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField
-from wtforms.validators import DataRequired
+from wtforms.validators import DataRequired, EqualTo
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 
@@ -12,6 +12,7 @@ from datetime import datetime
 app = Flask(__name__)  # create a Flask application
 # Secret key for form security
 app.config['SECRET_KEY'] = 'b818346b8a50ca0f5e38dd6670a0b475'
+# csrf = CSRFProtect(app)
 # tell the app where our database is located (SQLite database URI)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
 # initialise our database
@@ -26,6 +27,12 @@ login_manager.login_view = 'login'
 #     with app.app_context():
 #         db.create_all()
 #     return app
+
+class RegistrationForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired()])
+    password = PasswordField('Password', validators=[DataRequired()])
+    confirm_password= PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
+    submit =SubmitField('Sign Up')
 
 # create a class
 class Todo(db.Model):
@@ -108,12 +115,30 @@ def load_user(user_id):
     """
     return User.query.get(int(user_id))
 
+# Register route
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        # Create a new user
+        print("post accepted")
+        new_user = User(username=form.username.data)
+        new_user.set_password(form.password.data)
+        db.session.add(new_user)
+        db.session.commit()
+        
+        flash('Registration successfull! You can now log in.', 'success')
+        return redirect(url_for('login'))
+    else:
+        print(form.errors)
+    return render_template('register.html', form=form)
+
 # Login route
 # decorator to define URL route for the login view
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     # check if the user in the current session is authenticated
-    if current_user.is_authenticated:
+    if current_user.is_authenticated and request.method == 'POST':
         # redirect them to the home page
         return redirect(url_for('index'))
     # else create a form
@@ -139,12 +164,13 @@ def login():
 
 # Logout route
 # decorator to define URL rout for the logout view
-@app.route('/layout')
+@app.route('/logout')
 # decorator provided by Flask-Login to ensure user must be logged
 # in to access the logout route. if user is not logged in and tries to
 # access this page they will be redirected to the login page
 @login_required
 def logout():
+    get_flashed_messages()
     # logout the user, a Flask-Login method
     logout_user()
     # flash logout message
@@ -183,7 +209,12 @@ def index():
 @login_required
 def delete(id):
     # retrieve the task by id and if it does not exist give an error 404
-    delete_task = Todo.query.get_or_404(id, user=current_user)
+    delete_task = Todo.query.get_or_404(id)
+    
+    # Check if the task belongs to the current user
+    if delete_task.user != current_user:
+        # Forbidden, as the task does not belong to the current user
+        abort(403)
     
     try:
         # delete task
@@ -200,8 +231,11 @@ def delete(id):
 @login_required
 def update(id):
     # retrieve the task to update by id and if it does not exist give an error 404
-    update_task= Todo.query.get_or_404(id, user=current_user)
-    
+    update_task= Todo.query.get_or_404(id)
+    # Check if the task belongs to the current user
+    if update_task.user != current_user:
+        # Forbidden, as the task does not belong to the current user
+        abort(403)
     if request.method == "POST":
         # update the content of the task
         update_task.content = request.form['content']
