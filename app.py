@@ -171,20 +171,19 @@ def index():
             # return a redirect back to index
             return redirect('/')
         except:
-            return 'There was an issue adding your task'
+            flash("There was an issue adding your task", "error")
     else:
         # Query the database to retrieve all the database ordered by their date-created
         tasks =Todo.query.filter_by(user=current_user).order_by(Todo.date_created).all()
+        # render the home page which displays the todo lists
         return render_template("index.html", tasks=tasks)
-    
-    return render_template("index.html")
 
 # create another route for deleting a task
 @app.route("/delete/<int:id>")
 @login_required
 def delete(id):
     # retrieve the task by id and if it does not exist give an error 404
-    delete_task = Todo.query.get_or_404(id)
+    delete_task = Todo.query.get_or_404(id, user=current_user)
     
     try:
         # delete task
@@ -194,14 +193,14 @@ def delete(id):
         # redirect to task page
         return redirect('/')
     except:
-        return "There was an issue deleting your task"
+        flash("There was an issue deleting your task", "error")
     
 # create a route for updating an existing task
 @app.route("/update/<int:id>", methods=["GET", "POST"])
 @login_required
 def update(id):
     # retrieve the task to update by id and if it does not exist give an error 404
-    update_task= Todo.query.get_or_404(id)
+    update_task= Todo.query.get_or_404(id, user=current_user)
     
     if request.method == "POST":
         # update the content of the task
@@ -213,14 +212,20 @@ def update(id):
             # redirect to task page
             return redirect('/')
         except:
-            return "There was an issue updating your task"
+            flash("There was an issue updating your task", "error")
     else:
         return render_template("update.html", task=update_task)
 
 if __name__ == "__main__":
+    # create a context in which the app is active. it is a way
+    # to execute code that needs access to the application context
+    # such as database operations
     with app.app_context():
+        # this creates all the tables defined in the SQLAlchemy models.
+        # it initialises the database based on the models i have defined
         db.create_all()
-        # Create a default user if needed
+        # Create a default user if there is none
+        # this checks is there's no user with username, 'default' in the User table
         if not User.query.filter_by(username='default').first():
             default_user = User(username='default')
             default_user.set_password('taskmanager235802.')
