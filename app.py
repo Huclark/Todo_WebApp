@@ -44,7 +44,6 @@ class Todo(db.Model):
 
 # create the User model
 # UserMixin is a class which handles client authentication and sessions
-# It saves you from writing these methods and properties from scratch
 class User(db.Model, UserMixin):
     """For users
     """
@@ -87,6 +86,7 @@ class User(db.Model, UserMixin):
 
 # create the login form 
 # FlaskForm class is provided by FLASK-WTF   
+# It saves you from writing these methods and properties from scratch
 class LoginForm(FlaskForm):
     # Create a form field for the username
     # validators=[DataRequired()] specifies that the field is required
@@ -98,15 +98,70 @@ class LoginForm(FlaskForm):
     # Login is the label on the submit button
     submit = SubmitField('Login')
     
+# Flask-Login user loader
+# The decorator below is used to register a callback function that loads a user given their
+# user ID. A callback function is a function that is passed as an argument to another function
+# and is intended to be called later. load_user is the callback function in this case
+@login_manager.user_loader
+def load_user(user_id):
+    """Loads an existing user
+    """
+    return User.query.get(int(user_id))
+
+# Login route
+# decorator to define URL route for the login view
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    # check if the user in the current session is authenticated
+    if current_user.is_authenticated:
+        # redirect them to the home page
+        return redirect(url_for('index'))
+    # else create a form
+    form = LoginForm()
+    # validate_on_submit checks if the form has been submitted and is valid
+    if form.validate_on_submit():
+        # query the User model filtering through with the username from the form
+        # if user is found user will hold an object of the User class with the specified username
+        # if not found user will be none
+        user = User.query.filter_by(username=form.username.data).first()
+        # check if user exists and password is authentic;
+        if user and user.check_password(form.password.data):
+            # login_user from Flask-Login is used to login a user
+            login_user(user)
+            # Display a flash message
+            flash('Login successful!', 'success')
+            # redirect user to the index page
+            return redirect(url_for('index'))
+        # else if credentials are invalid, flash an error message
+        flash('Invalid username or password', 'error')
+    # redirect user to login page if credentials are invalid
+    return render_template('login.html', form=form)
+
+# Logout route
+# decorator to define URL rout for the logout view
+@app.route('/layout')
+# decorator provided by Flask-Login to ensure user must be logged
+# in to access the logout route. if user is not logged in and tries to
+# access this page they will be redirected to the login page
+@login_required
+def logout():
+    # logout the user, a Flask-Login method
+    logout_user()
+    # flash logout message
+    flash('Logout successful!', 'success')
+    # redirect user to the login page
+    return redirect(url_for('login'))
+    
 # create an index route so that when we browse to the URL we dont get error 404
 @app.route("/", methods=["POST", "GET"])
+@login_required
 def index():
     if request.method ==  "POST":
         # retrieve the content of the form
         # the 'content' passed to form is the name of the form in index.html
         task_content = request.form['content']
         # create a new task which is an instance of the Todo class
-        new_task = Todo(content=task_content) # type: ignore
+        new_task = Todo(content=task_content, user=current_user) # type: ignore
         
         try:
             # add task to database
@@ -119,13 +174,14 @@ def index():
             return 'There was an issue adding your task'
     else:
         # Query the database to retrieve all the database ordered by their date-created
-        tasks =Todo.query.order_by(Todo.date_created).all()
+        tasks =Todo.query.filter_by(user=current_user).order_by(Todo.date_created).all()
         return render_template("index.html", tasks=tasks)
     
     return render_template("index.html")
 
 # create another route for deleting a task
 @app.route("/delete/<int:id>")
+@login_required
 def delete(id):
     # retrieve the task by id and if it does not exist give an error 404
     delete_task = Todo.query.get_or_404(id)
@@ -142,6 +198,7 @@ def delete(id):
     
 # create a route for updating an existing task
 @app.route("/update/<int:id>", methods=["GET", "POST"])
+@login_required
 def update(id):
     # retrieve the task to update by id and if it does not exist give an error 404
     update_task= Todo.query.get_or_404(id)
