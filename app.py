@@ -12,7 +12,6 @@ from datetime import datetime
 app = Flask(__name__)  # create a Flask application
 # Secret key for form security
 app.config['SECRET_KEY'] = 'b818346b8a50ca0f5e38dd6670a0b475'
-# csrf = CSRFProtect(app)
 # tell the app where our database is located (SQLite database URI)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
 # initialise our database
@@ -22,32 +21,26 @@ login_manager = LoginManager(app)
 # Specify the login view for Flask-Login
 login_manager.login_view = 'login'
 
-# # define a function to create the app
-# def create_app():
-#     with app.app_context():
-#         db.create_all()
-#     return app
-
+# create registration model
 class RegistrationForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired()])
     confirm_password= PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
     submit =SubmitField('Sign Up')
 
-# create a class
-class Todo(db.Model):
-    """For the todo app 
-    """
-    # create columns
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    content = db.Column(db.String(200), nullable=False)
-    completed = db.Column(db.Integer, default=0)
-    date_created = db.Column(db.DateTime, default=datetime.utcnow)
-    
-    def __str__(self):
-        """string representation of class"""
-        return f"<Task {self.id}>"
+# create the login form 
+# FlaskForm class is provided by FLASK-WTF   
+# It saves you from writing these methods and properties from scratch
+class LoginForm(FlaskForm):
+    # Create a form field for the username
+    # validators=[DataRequired()] specifies that the field is required
+    username = StringField('Username', validators=[DataRequired()])
+    # Create a form field for the password
+    # validators=[DataRequired()] specifies that the field is required
+    password = PasswordField('Password', validators=[DataRequired()])
+    # create a submit button
+    # Login is the label on the submit button
+    submit = SubmitField('Login')
 
 # create the User model
 # UserMixin is a class which handles client authentication and sessions
@@ -91,19 +84,20 @@ class User(db.Model, UserMixin):
         # a plained-text password is the same as a stored hashed password
         return check_password_hash(self.password_hash, password)
 
-# create the login form 
-# FlaskForm class is provided by FLASK-WTF   
-# It saves you from writing these methods and properties from scratch
-class LoginForm(FlaskForm):
-    # Create a form field for the username
-    # validators=[DataRequired()] specifies that the field is required
-    username = StringField('Username', validators=[DataRequired()])
-    # Create a form field for the password
-    # validators=[DataRequired()] specifies that the field is required
-    password = PasswordField('Password', validators=[DataRequired()])
-    # create a submit button
-    # Login is the label on the submit button
-    submit = SubmitField('Login')
+# create a class
+class Todo(db.Model):
+    """For the todo app 
+    """
+    # create columns
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    content = db.Column(db.String(200), nullable=False)
+    completed = db.Column(db.Integer, default=0)
+    date_created = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    def __str__(self):
+        """string representation of class"""
+        return f"<Task {self.id}>"
     
 # Flask-Login user loader
 # The decorator below is used to register a callback function that loads a user given their
@@ -121,7 +115,6 @@ def register():
     form = RegistrationForm()
     if form.validate_on_submit():
         # Create a new user
-        print("post accepted")
         new_user = User(username=form.username.data)
         new_user.set_password(form.password.data)
         db.session.add(new_user)
@@ -129,8 +122,7 @@ def register():
         
         flash('Registration successfull! You can now log in.', 'success')
         return redirect(url_for('login'))
-    else:
-        print(form.errors)
+
     return render_template('register.html', form=form)
 
 # Login route
